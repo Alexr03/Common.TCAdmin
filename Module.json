@@ -5,7 +5,7 @@
     "UpdateSql": "update.sql",
     "UninstallSql": "uninstall.sql"
   },
-  "Dll": "Alexr03.Common.dll",
+  "Dll": "Alexr03.Common.TCAdmin.dll",
   "MasterOnly": false,
   "Dependencies": [
     "Alexr03.Common.dll",

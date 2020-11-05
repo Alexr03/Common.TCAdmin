@@ -1,0 +1,18 @@
+﻿{
+  "MinimumTcAdminVersion": "2.0.159.10",
+  "SqlProfiles": {
+    "InstallSql": "install.sql",
+    "UpdateSql": "update.sql",
+    "UninstallSql": "uninstall.sql"
+  },
+  "Dll": "Alexr03.Common.dll",
+  "MasterOnly": false,
+  "Dependencies": [
+    "Alexr03.Common.dll",
+    "Serilog.dll",
+    "Serilog.Sinks.Console.dll",
+    "Serilog.Sinks.File.dll",
+    "Microsoft.Extensions.Logging.dll",
+    "Microsoft.Extensions.Logging.Abstractions.dll"
+  ]
+}

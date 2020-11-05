@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Alexr03.Common.TCAdmin</id>
+    <version>1.0.0</version>
+    <title>Alexr03.Common TCAdmin</title>
+    <authors>Alex Redding</authors>
+    <owners>Alex Redding</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <projectUrl>https://alexr03.dev/</projectUrl>
+    <iconUrl>https://pbs.twimg.com/profile_images/1088371922805641217/8B-HIio1_400x400.jpg</iconUrl>
+    <description>Common methods used in Alexr03's modules for TCAdmin.</description>
+    <copyright>Copyright 2020</copyright>
+    <tags>Alexr03 Common</tags>
+    <dependencies>
+      <dependency id="Alexr03.Common" version="1.0.0" />
+      <dependency id="Microsoft.AspNet.WebPages" version="3.2.7" />
+      <dependency id="Microsoft.Extensions.Logging" version="5.0.0-rc.1.20451.14" />
+      <dependency id="MySql.Data" version="6.7.9" />
+      <dependency id="Newtonsoft.Json" version="12.0.3" />
+      <dependency id="Serilog" version="2.10.1-dev-01249" />
+      <dependency id="Serilog.Sinks.Console" version="4.0.0-dev-00839" />
+      <dependency id="Serilog.Sinks.File" version="5.0.0-dev-00887" />
+      <dependency id="System.Numerics.Vectors" version="4.5.0" />
+      <dependency id="System.Runtime.CompilerServices.Unsafe" version="5.0.0-rc.1.20451.14" />
+      <dependency id="TCAdmin" version="2.0.159.10" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="bin\debug\Alexr03.Common.dll" target="lib\net472\Alexr03.Common.dll" />
+  </files>
+</package>

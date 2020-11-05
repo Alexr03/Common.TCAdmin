@@ -1,0 +1,26 @@
+﻿@using System.Web.Mvc.Html
+@using Alexr03.Common
+@using Alexr03.Common.TCAdmin.Objects
+@using Kendo.Mvc.UI
+@using TCAdmin.SDK.Web.MVC.Extensions
+@{
+    Layout = this.GetTemplateFile("Shared/Main.cshtml", true);
+}
+
+@section sidebar{
+    @Html.Partial("_DefaultSidebar")
+}
+
+@(Html.Kendo().TabStrip()
+    .Name("tabstrip")
+    .Items(items =>
+    {
+        foreach (var configType in ModuleConfiguration.GetModuleConfigurations(Globals.ModuleId))
+        {
+            items.Add().Text(string.Format("{0} Configuration", configType.Type.Name)).LoadContentFrom("Configure", "ArCommon", new {configName = configType.ConfigName});
+        }
+        items.Add().Text("SQL Executor").LoadContentFrom("Sql", "ArCommon");
+    })
+    .SelectedIndex(0)
+    .TabPosition(TabStripTabPosition.Left)
+    )

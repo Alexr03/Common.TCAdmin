@@ -1,0 +1,44 @@
+﻿@using System.Web.Mvc.Ajax
+@using System.Web.Mvc.Html
+@using Kendo.Mvc.UI
+@using Serilog.Events
+@using TCAdmin.SDK.Web.MVC.Extensions
+@model Alexr03.Common.ArCommonSettings
+
+@using (Ajax.BeginForm(new AjaxOptions {OnSuccess = "TCAdmin.Ajax.ShowBasicDialog('Success', 'Successfully saved Alexr03.Common settings'); document.body.style.cursor = 'default';", OnFailure = "TCAdmin.Ajax.HandleAjaxFailure"}))
+{
+    @Html.AntiForgeryToken()
+    <div class="primary-toolbar">
+        @(Html.Kendo().ToolBar()
+            .Name("D6ToolBar")
+            .Items(items =>
+            {
+                items.Add().Template(this.GetToolbarButton(Resources.Global.Save, "save"));
+                items.Add().Type(CommandType.Button).Icon("cancel").Text(Resources.Global.Cancel).Click("TCAdmin.Ajax.CancelClicked");
+            }))
+    </div>
+    <div class="primary-content">
+        <fieldset class="fieldset-form auto-focus">
+            @Html.ValidationSummary(true)
+            @Html.Hidden("configName", "ArCommonSettings")
+            <ul>
+                <li>
+                    <dl>
+                        <h2>Alexr03.Common Settings</h2>
+                        <dt>@Html.LabelFor(m => m.MinimumLogLevel)</dt>
+                        <dd>
+                            @(Html.Kendo().DropDownListFor(m => m.MinimumLogLevel)
+                                .BindTo(Enum.GetNames(typeof(LogEventLevel)).Select(x => new DropDownListItem
+                                {
+                                    Text = x.ToString(),
+                                    Value = x
+                                }))
+                                .SelectedIndex((int)Model.MinimumLogLevel)
+                                )
+                        </dd>
+                    </dl>
+                </li>
+            </ul>
+        </fieldset>
+    </div>
+}

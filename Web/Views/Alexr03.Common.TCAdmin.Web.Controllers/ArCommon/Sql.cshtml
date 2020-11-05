@@ -1,0 +1,149 @@
+﻿@using System.Web.Mvc.Ajax
+@using System.Web.Mvc.Html
+@using Kendo.Mvc.UI
+@using TCAdmin.SDK.Web.MVC.Extensions
+@{
+    Layout = this.GetTemplateFile("Shared/Main.cshtml", true);
+}
+
+@section sidebar{
+    @Html.Partial("_DefaultSidebar")
+}
+
+@using (Ajax.BeginForm("Sql", "ArCommon", new AjaxOptions {Confirm = "Are you sure you want to execute this query?", HttpMethod = "POST", OnSuccess = "successSql", OnFailure = "Alexr03.Common.HandleAjaxFailure", OnBegin = "Alexr03.Common.HandleAjaxBegin", OnComplete = "Alexr03.Common.HandleAjaxComplete"}))
+{
+    <div class="primary-toolbar">
+        @(Html.Kendo().ToolBar()
+            .Name("ToolBar")
+            .Items(items =>
+            {
+                items.Add().Template("<button class='k-button k-primary' type='submit'><span class='k-icon k-i-js'></span>Execute</button>");
+                items.Add().Template(Html.Kendo().DropDownList()
+                    .Name("sqlScripts")
+                    .OptionLabel("Load SQL script...")
+                    .DataTextField("Name")
+                    .DataValueField("Id")
+                    .DataSource(x => x.Read("GetSqlScripts", "ArCommon"))
+                    .Events(e => e.Change("function(e){loadScript(e)}"))
+                    .ToHtmlString());
+                items.Add().Type(CommandType.Button).Text("Save SQL Script").Icon("save").HtmlAttributes(new {onclick = "saveScript()"});
+                items.Add().Type(CommandType.Button).Text("Delete SQL Script").Icon("delete").HtmlAttributes(new {onclick = "deleteScript()"});
+            }))
+    </div>
+    <div class="sql-form k-content">
+        <form id="sqlForm">
+            <h4>SQL Script</h4>
+            @Html.TextArea("sqlScript", new {placeholder = "Enter SQL Script here", rows = 10, width = "100%", @class = "k-input"})
+        </form>
+        <br/>
+    </div>
+}
+
+<h4 id="resultsHeader" style="display: none">SQL Script Result</h4>
+<div id="results"></div>
+
+<style>
+    .k-form-footer {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sql-form .k-button {
+        margin-top: 20px;
+        width: 120px;
+    }
+</style>
+
+<script src="../../3rdParty/codemirror-5.53.2/lib/codemirror.js"></script>
+<link rel="stylesheet" href="../../3rdParty/codemirror-5.53.2/lib/codemirror.css">
+<script src="../../3rdParty/codemirror-5.53.2/mode/sql/sql.js"></script>
+
+<script>
+    let scriptBox;
+
+    $(document).ready(function() {
+        scriptBox = CodeMirror.fromTextArea($("#sqlScript")[0], {
+          value: "",
+          mode:  "sql",
+          lineNumbers: true
+        });
+    });
+    
+    function successSql(e){
+        document.getElementById("resultsHeader").style.display = 'block';
+        document.getElementById("results").innerHTML = e.table;
+        
+        $("#sqltable").kendoGrid({
+            pageable: {
+                pageSize: 20,
+                alwaysVisible: true,
+                refresh: true,
+                buttonCount: 3
+            },
+            height: 700,
+            sortable: true,
+            filterable: true,
+        });
+    }
+    
+    function saveScript(){
+        let nameOfScript;
+        kendo.prompt('Name the script', '').done(function(data) {
+            nameOfScript = data;
+            $.ajax({
+                type: "POST",
+                url: "/ArCommon/Sql/Save",
+                data: JSON.stringify({ name: nameOfScript, contents: scriptBox.getValue() }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                error: Alexr03.Common.HandleAjaxFailure,
+                success: function (e) {
+                    Alexr03.Common.HandleAjaxSuccess(e);
+                    refreshScripts();
+                }
+            });
+        });
+    }
+    
+    function loadScript(e) {
+        const value = $("#sqlScripts").data("kendoDropDownList").value();
+        if(value == null || value === ''){return;}
+        $.ajax({
+            type: "GET",
+            url: "/ArCommon/Sql/Load",
+            data: {id: value },
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            error: Alexr03.Common.HandleAjaxFailure,
+            success: function (e) {
+                scriptBox.setValue(e.Contents)
+                Alexr03.Common.HandleAjaxSuccess(e);
+                refreshScripts();
+            }
+        });
+    }
+    
+    function deleteScript(){
+        const value = $("#sqlScripts").data("kendoDropDownList").value();
+        if(value == null){return;}
+        kendo.confirm('Are you sure you want to delete this script?').done(function(){
+            $.ajax({
+                type: "DELETE",
+                url: "/ArCommon/Sql/Delete",
+                data: JSON.stringify({ id: value }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                error: Alexr03.Common.HandleAjaxFailure,
+                success: function (e) {
+                    Alexr03.Common.HandleAjaxSuccess(e);
+                    scriptBox.setValue("")
+                    refreshScripts();
+                }
+            });
+        })
+    }
+    
+    function refreshScripts(){
+        $("#sqlScripts").data("kendoDropDownList").dataSource.read()
+    }
+</script>

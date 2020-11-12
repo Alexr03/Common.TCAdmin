@@ -95,6 +95,11 @@ namespace Alexr03.Common.TCAdmin.Objects
             return dynamicTypes.Any() ? dynamicTypes[0] : null;
         }
 
+        public List<DynamicTypeBase> FindAll()
+        {
+            return FindAllBy(new WhereList());
+        }
+
         public List<DynamicTypeBase> FindAllBy(WhereList whereList)
         {
             var dynamicTypes = new DynamicTypeBase(TableName).GetObjectList(whereList).Cast<DynamicTypeBase>().ToList();
@@ -109,6 +114,16 @@ namespace Alexr03.Common.TCAdmin.Objects
                 {"typeName", ColumnOperator.Like, typeName}
             };
             return FindBy(whereList);
+        }
+        
+        public ObjectList GetAll(WhereList whereList = null)
+        {
+            return this.GetObjectList(whereList ?? new WhereList());
+        }
+
+        public List<T> GetAll<T>(WhereList whereList = null) where T : ObjectBase
+        {
+            return this.GetObjectList(whereList ?? new WhereList()).Cast<T>().ToList();
         }
 
         public static object GetCurrent(Type type, string idParam = "id")
@@ -133,19 +148,9 @@ namespace Alexr03.Common.TCAdmin.Objects
             return Activator.CreateInstance(type, idInteger);
         }
 
-        public static T GetCurrent<T>(string idParam = "id")
+        public static T GetCurrent<T>(string idParam = "id") where T : ObjectBase
         {
             return (T) GetCurrent(typeof(T), idParam);
-        }
-
-        public ObjectList GetAll(WhereList whereList = null)
-        {
-            return this.GetObjectList(whereList ?? new WhereList());
-        }
-
-        public List<T> GetAll<T>(WhereList whereList = null)
-        {
-            return this.GetObjectList(whereList ?? new WhereList()).Cast<T>().ToList();
         }
     }
 }

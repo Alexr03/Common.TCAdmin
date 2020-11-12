@@ -197,7 +197,7 @@ Alexr03.Common = function Alexr03$Common() {
                             go();
                         } else {
                             kendo.ui.progress(loader, false);
-                            if (typeof success !== 'undefined') {
+                            if (typeof success != 'undefined') {
                                 if (success) {
                                     loader.addClass("k-icon");
                                     loader.addClass("k-i-success");

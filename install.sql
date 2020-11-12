@@ -37,7 +37,7 @@ INSERT INTO tc_module_server_components (module_id, component_id, display_name, 
                                          component_type, visible, component_class, required, startup_order)
 VALUES ('4911e2b1-49a5-4bcd-a768-a59419cf2fc7', 1, 'Alexr03 Common Service', 'arcommon',
         'Alexr03 Common Service for interactivity between modules', 1, 1,
-        'Alexr03.Common.TCAdmin.Services.ArCommonService, Alexr03.Common', 1, 100);
+        'Alexr03.Common.TCAdmin.Services.ArCommonService, Alexr03.Common.TCAdmin', 1, 100);
 
 INSERT INTO tc_server_enabled_components (module_id, component_id, server_id)
 VALUES ('4911e2b1-49a5-4bcd-a768-a59419cf2fc7', 1, 1);

@@ -1,4 +1,7 @@
-﻿using System.Reflection;
+﻿using System;
+using System.IO;
+using System.Reflection;
+using Alexr03.Common.TCAdmin.Objects;
 using Alexr03.Common.TCAdmin.Proxy;
 using TCAdmin.Interfaces.Logging;
 using TCAdmin.Interfaces.Server;
@@ -8,6 +11,7 @@ namespace Alexr03.Common.TCAdmin.Services
 {
     public class ArCommonService : IMonitorService
     {
+        private readonly Logging.LogManager _logger = Logging.LogManager.Create<ArCommonService>();
         public ArCommonService()
         {
             ConfigurationKey = "Alexr03.Common";
@@ -23,6 +27,19 @@ namespace Alexr03.Common.TCAdmin.Services
             Status = ServiceStatus.Starting;
             LogManager.Write("Starting Alexr03.Common Service...", LogType.Console);
             ProxyManager.RegisterFromAssembly(Assembly.GetExecutingAssembly());
+            foreach (var assemblyProxy in AssemblyProxy.GetAssemblyProxies())
+            {
+                try
+                {
+                    _logger.Information("Loading proxies from - " + assemblyProxy.Assembly.FullName);
+                    ProxyManager.RegisterFromAssembly(assemblyProxy.Assembly);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+            }
             LogManager.Write("Alexr03.Common Service has successfully started!", LogType.Console);
             Status = ServiceStatus.Running;
         }

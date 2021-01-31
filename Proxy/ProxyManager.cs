@@ -8,12 +8,14 @@ using TCAdmin.SDK.Misc;
 using TCAdmin.SDK.Proxies;
 using TCAdmin.SDK.Web.References.ModuleApiGateway;
 using AppDomainManager = TCAdmin.SDK.AppDomainManager;
+using LogManager = Alexr03.Common.TCAdmin.Logging.LogManager;
 using Server = TCAdmin.GameHosting.SDK.Objects.Server;
 
 namespace Alexr03.Common.TCAdmin.Proxy
 {
     public static class ProxyManager
     {
+        private static readonly LogManager Logger = LogManager.Create(typeof(ProxyManager));
         public static readonly List<CommandProxy> CommandProxies = new List<CommandProxy>();
 
         private static void AddProxy(this CommandProxy commandProxy)
@@ -39,19 +41,24 @@ namespace Alexr03.Common.TCAdmin.Proxy
 
         public static void RegisterProxy(this CommandProxy commandProxy)
         {
+            Logger.Information($"Registering {commandProxy.CommandName} proxy.");
             AppDomainManager.RegisterProxyCommand(commandProxy);
             AddProxy(commandProxy);
         }
 
         public static void UnRegisterProxies()
         {
-            foreach (var commandProxy in CommandProxies.ToList()) UnRegisterProxy(commandProxy.CommandName);
+            foreach (var commandProxy in CommandProxies.ToList())
+            {
+                UnRegisterProxy(commandProxy.CommandName);
+            }
 
             CommandProxies.Clear();
         }
 
         public static void UnRegisterProxy(string commandName)
         {
+            Logger.Information($"Unregistering {commandName} proxy.");
             AppDomainManager.UnregisterProxyCommand(commandName);
             RemoveProxy(commandName);
         }
@@ -59,7 +66,7 @@ namespace Alexr03.Common.TCAdmin.Proxy
         public static void RegisterFromAssembly(Assembly assembly)
         {
             var proxyRequests = assembly.GetTypes()
-                .Where(t => t.IsSubclassOf(typeof(ProxyRequest)) && !t.IsAbstract)
+                .Where(t => t.IsSubclassOf(typeof(ProxyRequest)))
                 .Select(t => (ProxyRequest) Activator.CreateInstance(t)).ToList();
             foreach (var request in proxyRequests)
             {
@@ -70,35 +77,38 @@ namespace Alexr03.Common.TCAdmin.Proxy
             }
         }
 
-        public static T Request<T>(string commandName,
+        public static T Request<T>(string commandName, Server server,
             object arguments, out CommandResponse commandResponse, bool waitForResponse = true,
             ProxyRequestType requestType = ProxyRequestType.Xml, JsonSerializerSettings settings = null)
         {
             try
             {
-                var server = Server.GetServerFromCache(1);
                 commandResponse = new CommandResponse();
-                if (server.ModuleApiGateway.ExecuteModuleCommand(commandName, arguments, ref commandResponse,
-                    waitForResponse))
-                    switch (requestType)
+                if (requestType == ProxyRequestType.Json)
+                {
+                    arguments = JsonConvert.SerializeObject(arguments);
+                }
+                if (!server.ModuleApiGateway.ExecuteModuleCommand(commandName, arguments, ref commandResponse,
+                    waitForResponse)) throw new Exception("Proxy command execution failed.");
+                switch (requestType)
+                {
+                    case ProxyRequestType.Xml:
                     {
-                        case ProxyRequestType.Xml:
-                        {
-                            var xmlToObject = (T) ObjectXml.XmlToObject(commandResponse.Response.ToString(), typeof(T));
-                            return xmlToObject;
-                        }
-                        case ProxyRequestType.Json:
-                            if (settings == null) settings = Utilities.NoErrorJsonSettings;
-
-                            return JsonConvert.DeserializeObject<T>(commandResponse.Response.ToString(), settings);
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(requestType), requestType, null);
+                        var xmlToObject = (T) ObjectXml.XmlToObject(commandResponse.Response.ToString(), typeof(T));
+                        return xmlToObject;
                     }
+                    case ProxyRequestType.Json:
+                        if (settings == null) settings = Utilities.NoErrorJsonSettings;
 
-                throw new Exception("Proxy command execution failed.");
+                        Console.WriteLine("Respoinse = " + commandResponse.Response);
+                        return JsonConvert.DeserializeObject<T>(commandResponse.Response.ToString());
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(requestType), requestType, null);
+                }
             }
             catch (Exception e)
             {
+                Logger.Fatal(e);
                 commandResponse = new CommandResponse {SerializedException = e.Message};
                 return Activator.CreateInstance<T>();
             }

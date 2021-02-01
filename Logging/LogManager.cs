@@ -9,7 +9,7 @@ namespace Alexr03.Common.TCAdmin.Logging
 {
     public class LogManager
     {
-        private readonly string _logBaseLocation = Utility.GetLogPath() + "Components\\{0}\\{1}\\{2}\\{2}.log";
+        private readonly string _logBaseLocation = Utility.GetLogPath() + "Components/{0}/{1}/{2}/{2}.log";
         public string Application { get; }
         private Type Type { get; }
         private string LogLocation { get; }

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Alexr03.Common.TCAdmin.Objects;
 using Alexr03.Common.TCAdmin.Proxy;
 using TCAdmin.Interfaces.Logging;
 using TCAdmin.Interfaces.Server;
 using TCAdmin.SDK;
+using TCAdmin.SDK.Objects;
 
 namespace Alexr03.Common.TCAdmin.Services
 {
@@ -26,6 +28,14 @@ namespace Alexr03.Common.TCAdmin.Services
         {
             Status = ServiceStatus.Starting;
             LogManager.Write("Starting Alexr03.Common Service...", LogType.Console);
+            RegisterProxiesFromDatabase();
+            RegisterOntoRemotes();
+            LogManager.Write("Alexr03.Common Service has successfully started!", LogType.Console);
+            Status = ServiceStatus.Running;
+        }
+
+        private void RegisterProxiesFromDatabase()
+        {
             ProxyManager.RegisterFromAssembly(Assembly.GetExecutingAssembly());
             foreach (var assemblyProxy in AssemblyProxy.GetAssemblyProxies())
             {
@@ -40,8 +50,42 @@ namespace Alexr03.Common.TCAdmin.Services
                     throw;
                 }
             }
-            LogManager.Write("Alexr03.Common Service has successfully started!", LogType.Console);
-            Status = ServiceStatus.Running;
+        }
+
+        private void RegisterOntoRemotes()
+        {
+            var serverIdAppSetting = Utility.AppSettings["TCAdmin.Monitor.ServerId"];
+            if (!string.IsNullOrEmpty(serverIdAppSetting))
+            {
+                var serverId = int.Parse(serverIdAppSetting);
+                if (serverId != 1)
+                {
+                    _logger.Information("Skipping registration on remotes");
+                }
+                else
+                {
+                    foreach (var server in Server.GetEnabledServers().Cast<Server>())
+                    {
+                        var serverEnabledComponents = ServerEnabledComponent.GetServerComponents(server.ServerId)
+                            .Cast<ServerEnabledComponent>().ToList();
+                        if (serverEnabledComponents.Any(x => x.ModuleId == Globals.ModuleId && x.ComponentId == 1))
+                        {
+                            _logger.Information(
+                                $"Skipping registration of Alexr03.Common onto {server.Name} as it is already registered.");
+                            continue;
+                        }
+
+                        _logger.Information("Registering Alexr03.Common onto " + server.Name);
+                        var serverEnabledComponent = new ServerEnabledComponent()
+                        {
+                            ModuleId = Globals.ModuleId,
+                            ComponentId = 1,
+                            ServerId = server.ServerId
+                        };
+                        serverEnabledComponent.Save();
+                    }
+                }
+            }
         }
 
         public void Stop()

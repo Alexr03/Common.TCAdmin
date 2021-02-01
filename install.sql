@@ -31,6 +31,14 @@ create table ar_common_sql_scripts
     primary key (id, moduleId)
 );
 
+create table ar_common_proxies
+(
+    id       int  not null
+        primary key,
+    assembly text not null,
+    app_data text null
+);
+
 -- ---------------------------------------------------------------------------------------------------------------------
 
 INSERT INTO tc_module_server_components (module_id, component_id, display_name, short_name, description,

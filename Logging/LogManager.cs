@@ -109,6 +109,16 @@ namespace Alexr03.Common.TCAdmin.Logging
             LogMessage(message, logEventLevel: LogEventLevel.Error);
         }
         
+        public void Error(string message, Exception e)
+        {
+            LogMessage(message, e, LogEventLevel.Error);
+        }
+
+        public void Error(Exception e)
+        {
+            LogMessage(e.Message, logEventLevel: LogEventLevel.Error);
+        }
+        
         public void Fatal(string message)
         {
             LogMessage(message, logEventLevel: LogEventLevel.Fatal);
@@ -116,7 +126,7 @@ namespace Alexr03.Common.TCAdmin.Logging
 
         public void Fatal(string message, Exception e)
         {
-            LogMessage(message, logEventLevel: LogEventLevel.Fatal);
+            LogMessage(message, e, LogEventLevel.Fatal);
         }
 
         public void Fatal(Exception e)

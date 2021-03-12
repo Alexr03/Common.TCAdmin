@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Alexr03.Common.TCAdmin.Objects;
 using Serilog;
 using Serilog.Events;
@@ -141,6 +143,24 @@ namespace Alexr03.Common.TCAdmin.Logging
                 InternalLogger.Fatal(exception, message);
             }
             InternalLogger.Write(logEventLevel, message);
+        }
+        
+        public List<FileInfo> GetLogFiles()
+        {
+            var directoryInfo = new FileInfo(LogLocation).Directory;
+            directoryInfo?.Create();
+            return directoryInfo?.GetFiles().ToList();
+        }
+
+        public FileInfo GetCurrentLogFile()
+        {
+            var fileInfos = GetLogFiles().OrderByDescending(x => x.LastWriteTimeUtc).ToList();
+            if (fileInfos.Count >= 1)
+            {
+                return fileInfos[0];
+            }
+
+            return null;
         }
     }
 }
